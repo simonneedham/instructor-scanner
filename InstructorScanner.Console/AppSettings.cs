@@ -1,0 +1,10 @@
+﻿namespace InstructorScanner.ConsoleApp
+{
+    class AppSettings
+    {
+        public string RootUrl { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string LoginPage { get; set; }
+    }
+}
