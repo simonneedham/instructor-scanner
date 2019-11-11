@@ -6,5 +6,6 @@
         public string Username { get; set; }
         public string Password { get; set; }
         public string LoginPage { get; set; }
+        public string BookingPage { get; set; }
     }
 }
