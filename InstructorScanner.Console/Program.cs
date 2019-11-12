@@ -64,8 +64,11 @@ namespace InstructorScanner.ConsoleApp
             // //div[@class='floatThead-container']/table[@class='BookingTable']/thead/tr
             // //*[@id="BookingPlaceHolder"]/div/table/thead/tr[1]/td
 
-            var timesTDs = bookingPageParser.DocumentNode.SelectNodes("/*[@id='BookingPlaceHolder']/div/table/thead/tr[1]/td");
+            var tableBookings = bookingPageParser.DocumentNode.SelectSingleNode("//table[@id='tblBookings']");
+            if (tableBookings == null) throw new Exception("Could not find table with an id of 'tblBookings'");
 
+            var timesTDNodes = tableBookings.SelectNodes("//td[@class='TimeHeaderHalf']"); //is this searching children only
+            var times = timesTDNodes.Select(n => n.GetDirectInnerText()).ToList();
 
             //- Find Table@id = tblBookings / tbody
             //- Find row where tr / td innerText = 'C Swinhoe-Standen'
