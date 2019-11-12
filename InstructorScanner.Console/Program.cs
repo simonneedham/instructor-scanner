@@ -14,42 +14,70 @@ namespace InstructorScanner.ConsoleApp
     {
         public static async Task Main(string[] args)
         {
-            var configurationRoot = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
+            string bookingPageContents;
+            var bookingPageFile = Path.Combine(Directory.GetCurrentDirectory(), "BookingPage.html");
 
-            var appSettings = new AppSettings();
-            configurationRoot
-            .GetSection("AppSettings")
-            .Bind(appSettings);
-
-            var rootUrl = new Uri(appSettings.RootUrl);
-            var loginPageUrl = new Uri(rootUrl, appSettings.LoginPage);
-            var bookingPageUrl = new Uri(rootUrl, appSettings.BookingPage);
-
-            var cookies = new CookieContainer();
-
-            using (var httpClientHandler = new HttpClientHandler { CookieContainer = cookies })
-            using (var httpClient = new HttpClient(httpClientHandler))
+            if (!File.Exists(bookingPageFile))
             {
+                Console.WriteLine("Loading from web");
 
-                var loginPageHtml = await httpClient.GetStringAsync(loginPageUrl);
-                var dictionaryLoginInputs = GetDictionaryLoginInputs(appSettings, loginPageHtml);
-                WriteCookiesToConsole(cookies, loginPageUrl);
+                var configurationRoot = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .Build();
 
+                var appSettings = new AppSettings();
+                configurationRoot
+                .GetSection("AppSettings")
+                .Bind(appSettings);
 
-                var bookingPageHtml = await httpClient.PostAsync(loginPageUrl, new FormUrlEncodedContent(dictionaryLoginInputs));
-                bookingPageHtml.EnsureSuccessStatusCode();
-                Console.WriteLine($"StatusCode: {bookingPageHtml.StatusCode}");
-                WriteCookiesToConsole(cookies, loginPageUrl);
+                var rootUrl = new Uri(appSettings.RootUrl);
+                var loginPageUrl = new Uri(rootUrl, appSettings.LoginPage);
+                var bookingPageUrl = new Uri(rootUrl, $"{appSettings.BookingPage}?dt=20/11/2019");
 
-                Console.WriteLine();
-                Console.WriteLine();
-                Console.WriteLine(await bookingPageHtml.Content.ReadAsStringAsync());
+                var cookies = new CookieContainer();
 
-                Console.ReadLine();
+                using (var httpClientHandler = new HttpClientHandler { CookieContainer = cookies })
+                using (var httpClient = new HttpClient(httpClientHandler))
+                {
+                    var loginPageHtml = await httpClient.GetStringAsync(loginPageUrl);
+                    var dictionaryLoginInputs = GetDictionaryLoginInputs(appSettings, loginPageHtml);
+
+                    var bookingPageResponse = await httpClient.PostAsync(loginPageUrl, new FormUrlEncodedContent(dictionaryLoginInputs));
+                    bookingPageResponse.EnsureSuccessStatusCode();
+
+                    bookingPageResponse = await httpClient.GetAsync(bookingPageUrl);
+                    bookingPageResponse.EnsureSuccessStatusCode();
+
+                    bookingPageContents = await bookingPageResponse.Content.ReadAsStringAsync();
+                    await File.WriteAllTextAsync(bookingPageFile, bookingPageContents);
+                }
             }
+
+            Console.WriteLine("Loading from file");
+            bookingPageContents = await File.ReadAllTextAsync(bookingPageFile);
+
+            var bookingPageParser = new HtmlDocument();
+            bookingPageParser.LoadHtml(bookingPageContents);
+
+            //- Read Table @class = 'BookingTable floatThead-table' / thead / tr / td for times
+            // //div[@class='floatThead-container']/table[@class='BookingTable']/thead/tr
+            // //*[@id="BookingPlaceHolder"]/div/table/thead/tr[1]/td
+
+            var timesTDs = bookingPageParser.DocumentNode.SelectNodes("/*[@id='BookingPlaceHolder']/div/table/thead/tr[1]/td");
+
+
+            //- Find Table@id = tblBookings / tbody
+            //- Find row where tr / td innerText = 'C Swinhoe-Standen'
+
+            //- Read each TD class
+            // - class='UnavailableBase'
+            // - class='AvailableCellBase'
+            // - class='BookedCellBase'
+
+
+
+            Console.ReadLine();
         }
 
         private static void WriteCookiesToConsole(CookieContainer cookies, Uri uri)
@@ -71,22 +99,14 @@ namespace InstructorScanner.ConsoleApp
             foreach (var input in inputs)
             {
                 dictionary.Add(input.GetAttributeValue("name", string.Empty), input.GetAttributeValue("value", string.Empty));
-                //Console.WriteLine($"{input.GetAttributeValue("name", string.Empty)}: {input.GetAttributeValue("value", string.Empty)}");
+                // Console.WriteLine($"{input.GetAttributeValue("name", string.Empty)}: {input.GetAttributeValue("value", string.Empty)}");
             }
 
             dictionary["ctl00$UserID"] = appSettings.Username;
             dictionary["ctl00$Pwd"] = appSettings.Password;
 
-            if(!dictionary.ContainsKey("__EVENTTARGET"))
-            {
-                dictionary.Add("__EVENTTARGET", string.Empty);
-            }
-
-            if (!dictionary.ContainsKey("__EVENTARGUMENT"))
-            {
-                dictionary.Add("__EVENTARGUMENT", string.Empty);
-            }
-
+            dictionary.TryAdd("__EVENTTARGET", string.Empty);
+            dictionary.TryAdd("__EVENTARGUMENT", string.Empty);
             dictionary.TryAdd("ctl00$ImageButton1.x", "0");
             dictionary.TryAdd("ctl00$ImageButton1.y", "0");
 
