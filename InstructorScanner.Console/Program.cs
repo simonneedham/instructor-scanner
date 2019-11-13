@@ -1,11 +1,8 @@
-﻿using HtmlAgilityPack;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace InstructorScanner.ConsoleApp
@@ -25,114 +22,54 @@ namespace InstructorScanner.ConsoleApp
                 .Bind(appSettings);
 
 
-            var instructor = new Instructor { Name = appSettings.InstructorName };
+            var instructor = new Instructor { Name = appSettings.InstructorName, CalendarDays = new List<CalendarDay>() };
 
-            string bookingPageContents;
-            var bookingPageFile = Path.Combine(Directory.GetCurrentDirectory(), "BookingPage.html");
-
-            if (!File.Exists(bookingPageFile))
+            var today = DateTime.Today;
+            using (var bpp = new BookingPageParser(appSettings))
             {
-                Console.WriteLine("Loading from web");
-
-                var rootUrl = new Uri(appSettings.RootUrl);
-                var loginPageUrl = new Uri(rootUrl, appSettings.LoginPage);
-                var bookingPageUrl = new Uri(rootUrl, $"{appSettings.BookingPage}?dt=20/11/2019");
-
-                var cookies = new CookieContainer();
-
-                using (var httpClientHandler = new HttpClientHandler { CookieContainer = cookies })
-                using (var httpClient = new HttpClient(httpClientHandler))
+                for (var d = 0; d < appSettings.DaysToScan; d++)
                 {
-                    var loginPageHtml = await httpClient.GetStringAsync(loginPageUrl);
-                    var dictionaryLoginInputs = GetDictionaryLoginInputs(appSettings, loginPageHtml);
+                    var parseDate = today.AddDays(d);
+                    Console.WriteLine($"Parsing bookings page for {parseDate:dd/MM/yyyy}");
 
-                    var bookingPageResponse = await httpClient.PostAsync(loginPageUrl, new FormUrlEncodedContent(dictionaryLoginInputs));
-                    bookingPageResponse.EnsureSuccessStatusCode();
+                    try
+                    {
+                        var calDay = await bpp.GetBookings(parseDate, appSettings.InstructorName);
+                        instructor.CalendarDays.Add(calDay);
+                        Console.WriteLine($"Found {calDay.Slots.Where(w => w.Availability == AvailabilityNames.Free).ToList().Count } free booking slots.");
+                        Console.WriteLine();
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine($"Failed to parse {parseDate:dd/MM/yyyy}. {ex.Message}");
+                    }
 
-                    bookingPageResponse = await httpClient.GetAsync(bookingPageUrl);
-                    bookingPageResponse.EnsureSuccessStatusCode();
-
-                    bookingPageContents = await bookingPageResponse.Content.ReadAsStringAsync();
-                    await File.WriteAllTextAsync(bookingPageFile, bookingPageContents);
+                    Task.Delay(5000).Wait();
                 }
             }
 
-            Console.WriteLine("Loading from file");
-            bookingPageContents = await File.ReadAllTextAsync(bookingPageFile);
-
-            var calendarDay = new CalendarDay { Date = new DateTime(2019, 11, 20) };
-
-            var bookingPageParser = new HtmlDocument();
-            bookingPageParser.LoadHtml(bookingPageContents);
-
-            var tableBookings = bookingPageParser.DocumentNode.SelectSingleNode("//table[@id='tblBookings']");
-            if (tableBookings == null) throw new Exception("Could not find table with an id of 'tblBookings'");
-
-            var timesTDNodes = tableBookings.SelectNodes(".//td[@class='TimeHeaderHalf']"); //is this searching children only
-            var times = timesTDNodes.Select(n => n.GetDirectInnerText()).ToList();
-
-            //- Find row where tr / td innerText = 'Instructor Name'
-            var slots = new List<Slot>();
-            var instructorRowNode = tableBookings.SelectSingleNode($".//tr[td='{appSettings.InstructorName}']");
-            if (instructorRowNode != null)
-            {
-                Console.WriteLine("Found instructor row");
-                var bookings = instructorRowNode.SelectNodes(".//td").Select(n => BookingStatus(n)).ToList();
-
-                if (times.Count != bookings.Count)
-                    throw new Exception("Eeek!! Time slot count doesn't match bookings count!");
 
 
-                for (var i = 0; i < bookings.Count; i++)
-                {
-                    slots.Add(new Slot { Availability = bookings[i], Time = times[i] });
-                }
-            }
 
-            calendarDay.Slots = slots;
-            instructor.CalendarDays = new List<CalendarDay> { calendarDay };
+
+            //string bookingPageContents;
+            //var bookingPageFile = Path.Combine(Directory.GetCurrentDirectory(), "BookingPage.html");
+            //await File.WriteAllTextAsync(bookingPageFile, bookingPageContents);
+
+            //if (!File.Exists(bookingPageFile))
+            //{
+            //    Console.WriteLine("Loading from web");
+            //}
+            //else
+            //{
+            //    Console.WriteLine("Loading from file");
+            //    bookingPageContents = await File.ReadAllTextAsync(bookingPageFile);
+            //}
+
 
             Console.ReadLine();
         }
 
-        private static string BookingStatus(HtmlNode htmlNode)
-        {
-            if (htmlNode.HasClass("AvailableCellBase")) return AvailabilityNames.Free;
-            if (htmlNode.HasClass("BookedCellBase")) return AvailabilityNames.Booked;
-            return AvailabilityNames.NA;
-        }
 
-        private static void WriteCookiesToConsole(CookieContainer cookies, Uri uri)
-        {
-            foreach (var cookie in cookies.GetCookies(uri).Cast<Cookie>())
-            {
-                Console.WriteLine($"{cookie.Name}: {cookie.Value}");
-            }
-        }
-
-        private static Dictionary<string, string> GetDictionaryLoginInputs(AppSettings appSettings, string loginPageHtml)
-        {
-            var loginPageParser = new HtmlDocument();
-            loginPageParser.LoadHtml(loginPageHtml);
-
-            var inputs = loginPageParser.DocumentNode.SelectNodes("//form[@id='form1']//input");
-
-            var dictionary = new Dictionary<string, string>();
-            foreach (var input in inputs)
-            {
-                dictionary.Add(input.GetAttributeValue("name", string.Empty), input.GetAttributeValue("value", string.Empty));
-                // Console.WriteLine($"{input.GetAttributeValue("name", string.Empty)}: {input.GetAttributeValue("value", string.Empty)}");
-            }
-
-            dictionary["ctl00$UserID"] = appSettings.Username;
-            dictionary["ctl00$Pwd"] = appSettings.Password;
-
-            dictionary.TryAdd("__EVENTTARGET", string.Empty);
-            dictionary.TryAdd("__EVENTARGUMENT", string.Empty);
-            dictionary.TryAdd("ctl00$ImageButton1.x", "0");
-            dictionary.TryAdd("ctl00$ImageButton1.y", "0");
-
-            return dictionary;
-        }
     }
 }

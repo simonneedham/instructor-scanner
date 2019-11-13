@@ -8,5 +8,6 @@
         public string LoginPage { get; set; }
         public string BookingPage { get; set; }
         public string InstructorName { get; set; }
+        public int DaysToScan { get; set; }
     }
 }
