@@ -48,8 +48,21 @@ namespace InstructorScanner.ConsoleApp
             var instructorRowNode = tableBookings.SelectSingleNode($".//tr[td='{instructorName}']");
             if (instructorRowNode != null)
             {
+
                 Console.WriteLine("Found instructor row");
-                var bookings = instructorRowNode.SelectNodes(".//td").Select(n => BookingStatus(n)).ToList();
+
+                var originalBookingTds = instructorRowNode.SelectNodes(".//td[not(@class='HeaderCellAc')]");
+                var bookings = new List<string>();
+                foreach (var tdNode in originalBookingTds)
+                {
+                    var status = BookingStatus(tdNode);
+                    var bookingCount = GetNumberOfBookings(tdNode);
+
+                    for (var i = 0; i < bookingCount; i++)
+                    {
+                        bookings.Add(status);
+                    }
+                }
 
                 if (times.Count != bookings.Count)
                     throw new Exception("Eeek!! Time slot count doesn't match bookings count!");
@@ -68,6 +81,22 @@ namespace InstructorScanner.ConsoleApp
             };
 
             return calendarDay;
+        }
+
+        private int GetNumberOfBookings(HtmlNode tdNode)
+        {
+            var colSpanAttribute = tdNode.Attributes.SingleOrDefault(a => a.Name == "colspan");
+            if (colSpanAttribute == null) return 0;
+
+            if (int.TryParse(colSpanAttribute.Value, out var totalBookingSpan))
+            {
+                var bookingSpanSize = 2;
+                return totalBookingSpan / bookingSpanSize;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         private string BookingStatus(HtmlNode htmlNode)
