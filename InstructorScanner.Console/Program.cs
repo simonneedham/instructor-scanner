@@ -24,7 +24,7 @@ namespace InstructorScanner.ConsoleApp
 
             var instructor = new Instructor { Name = appSettings.InstructorName, CalendarDays = new List<CalendarDay>() };
 
-            var today = =DateTime.Today;
+            var today = DateTime.Today;
             using (var bpp = new BookingPageParser(appSettings))
             {
                 for (var d = 0; d < appSettings.DaysToScan; d++)
