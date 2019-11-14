@@ -40,8 +40,14 @@ namespace InstructorScanner.ConsoleApp
             var tableBookings = bookingPageParser.DocumentNode.SelectSingleNode("//table[@id='tblBookings']");
             if (tableBookings == null) throw new Exception("Could not find table with an id of 'tblBookings'");
 
-            var timesTDNodes = tableBookings.SelectNodes(".//td[@class='TimeHeaderHalf']"); //is this searching children only
-            var times = timesTDNodes.Select(n => n.GetDirectInnerText()).ToList();
+            var times = new List<string>();
+            var timesTDNodes = tableBookings.SelectNodes(".//td[@class='TimeHeaderHalf']");
+            foreach(var td in timesTDNodes)
+            {
+                var time = td.GetDirectInnerText();
+                times.Add(time);
+                times.Add($"{time}:30");
+            }
 
             //- Find row where tr / td innerText = 'Instructor Name'
             var slots = new List<Slot>();
@@ -56,9 +62,9 @@ namespace InstructorScanner.ConsoleApp
                 foreach (var tdNode in originalBookingTds)
                 {
                     var status = BookingStatus(tdNode);
-                    var bookingCount = GetNumberOfBookings(tdNode);
+                    var statusCount = GetColSpanValue(tdNode);
 
-                    for (var i = 0; i < bookingCount; i++)
+                    for (var i = 0; i < statusCount; i++)
                     {
                         bookings.Add(status);
                     }
@@ -83,19 +89,18 @@ namespace InstructorScanner.ConsoleApp
             return calendarDay;
         }
 
-        private int GetNumberOfBookings(HtmlNode tdNode)
+        private int GetColSpanValue(HtmlNode tdNode)
         {
             var colSpanAttribute = tdNode.Attributes.SingleOrDefault(a => a.Name == "colspan");
-            if (colSpanAttribute == null) return 0;
+            if (colSpanAttribute == null) return 1;
 
-            if (int.TryParse(colSpanAttribute.Value, out var totalBookingSpan))
+            if (int.TryParse(colSpanAttribute.Value, out var colSpanValue))
             {
-                var bookingSpanSize = 2;
-                return totalBookingSpan / bookingSpanSize;
+                return colSpanValue;
             }
             else
             {
-                return 0;
+                return 1;
             }
         }
 

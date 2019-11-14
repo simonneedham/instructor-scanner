@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -48,23 +49,12 @@ namespace InstructorScanner.ConsoleApp
                 }
             }
 
-
-
-
-
-            //string bookingPageContents;
-            //var bookingPageFile = Path.Combine(Directory.GetCurrentDirectory(), "BookingPage.html");
-            //await File.WriteAllTextAsync(bookingPageFile, bookingPageContents);
-
-            //if (!File.Exists(bookingPageFile))
-            //{
-            //    Console.WriteLine("Loading from web");
-            //}
-            //else
-            //{
-            //    Console.WriteLine("Loading from file");
-            //    bookingPageContents = await File.ReadAllTextAsync(bookingPageFile);
-            //}
+            var instructorBookingsJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "instructor-bookings.json");
+            using (var file = File.CreateText(instructorBookingsJsonPath))
+            {
+                var serializer = new JsonSerializer();
+                serializer.Serialize(file, instructor);
+            }
 
 
             Console.ReadLine();
