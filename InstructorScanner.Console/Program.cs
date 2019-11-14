@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -22,27 +23,34 @@ namespace InstructorScanner.ConsoleApp
                 .GetSection("AppSettings")
                 .Bind(appSettings);
 
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder
+                    .AddConsole();
+            });
+            var logger = loggerFactory.CreateLogger("InstructorScanner.ConsoleApp");
+
 
             var instructor = new Instructor { Name = appSettings.InstructorName, CalendarDays = new List<CalendarDay>() };
 
             var today = DateTime.Today;
-            using (var bpp = new BookingPageParser(appSettings))
+            using (var bpp = new BookingPageParser(appSettings, logger))
             {
                 for (var d = 0; d < appSettings.DaysToScan; d++)
                 {
                     var parseDate = today.AddDays(d);
-                    Console.WriteLine($"Parsing bookings page for {parseDate:dd/MM/yyyy}");
+                    logger.LogInformation($"Parsing bookings page for {parseDate:dd/MM/yyyy}");
 
                     try
                     {
                         var calDay = await bpp.GetBookings(parseDate, appSettings.InstructorName);
                         instructor.CalendarDays.Add(calDay);
-                        Console.WriteLine($"Found {calDay.Slots.Where(w => w.Availability == AvailabilityNames.Free).ToList().Count } free booking slots.");
-                        Console.WriteLine();
+                        logger.LogInformation($"Found {calDay.Slots.Where(w => w.Availability == AvailabilityNames.Free).ToList().Count } free booking slots.");
+                        logger.LogInformation(string.Empty);
                     }
                     catch(Exception ex)
                     {
-                        Console.WriteLine($"Failed to parse {parseDate:dd/MM/yyyy}. {ex.Message}");
+                        logger.LogError(ex, $"Failed to parse {parseDate:dd/MM/yyyy}.");
                     }
 
                     Task.Delay(5000).Wait();

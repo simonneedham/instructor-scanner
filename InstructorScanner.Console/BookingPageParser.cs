@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,15 +12,17 @@ namespace InstructorScanner.ConsoleApp
     class BookingPageParser : IDisposable
     {
         private readonly AppSettings _appSettings;
+        private readonly ILogger _logger;
         private CookieContainer _cookies;
         private HttpClientHandler _httpClientHandler;
         private HttpClient _httpClient;
         private readonly Uri _rootUrl;
 
 
-        public BookingPageParser(AppSettings appSettings)
+        public BookingPageParser(AppSettings appSettings, ILogger logger)
         {
             _appSettings = appSettings;
+            _logger = logger;
             _rootUrl = new Uri(appSettings.RootUrl);
         }
 
@@ -55,7 +58,7 @@ namespace InstructorScanner.ConsoleApp
             if (instructorRowNode != null)
             {
 
-                Console.WriteLine("Found instructor row");
+                _logger.LogInformation("Found instructor row");
 
                 var originalBookingTds = instructorRowNode.SelectNodes(".//td[not(@class='HeaderCellAc')]");
                 var bookings = new List<string>();
@@ -156,7 +159,7 @@ namespace InstructorScanner.ConsoleApp
 
             foreach (var cookie in _cookies.GetCookies(uri).Cast<Cookie>())
             {
-                Console.WriteLine($"{cookie.Name}: {cookie.Value}");
+                _logger.LogInformation($"{cookie.Name}: {cookie.Value}");
             }
         }
 
