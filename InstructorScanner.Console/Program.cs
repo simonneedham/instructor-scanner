@@ -52,7 +52,7 @@ namespace InstructorScanner.ConsoleApp
             var newInstructorCalendar = await icb.BuildInstructorAsync(appSettings.InstructorName);
 
 
-
+            var calendarChanges = InstructorCalendarComparer.Compare(oldInstructorCalendar, newInstructorCalendar);
 
             
             using (var file = File.CreateText(instructorBookingsJsonPath))
