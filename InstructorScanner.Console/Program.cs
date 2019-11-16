@@ -47,10 +47,8 @@ namespace InstructorScanner.ConsoleApp
                 };
             }
 
-
             var icb = new InstructorCalendarBuilder(appSettings, logger);
             var newInstructorCalendar = await icb.BuildInstructorAsync(appSettings.InstructorName);
-
 
             var calendarChanges = InstructorCalendarComparer.Compare(oldInstructorCalendar, newInstructorCalendar);
 
@@ -58,6 +56,11 @@ namespace InstructorScanner.ConsoleApp
             using (var file = File.CreateText(instructorBookingsJsonPath))
             {
                 jsonSerializer.Serialize(file, newInstructorCalendar);
+            }
+
+            foreach(var msg in calendarChanges)
+            {
+                logger.LogInformation(msg);
             }
 
 

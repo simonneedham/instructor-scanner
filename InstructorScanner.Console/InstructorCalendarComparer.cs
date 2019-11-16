@@ -15,28 +15,44 @@ namespace InstructorScanner.ConsoleApp
 
             var messages = new List<string>();
 
-            //compare matching dates, capture new bookings
+            //capture new bookings
             var maxOldCalDayDate = DateTime.MinValue;
-            foreach(var oldCalDay in oldValue.CalendarDays)
-            {
-                var newCalDay = newValue.CalendarDays.SingleOrDefault(cd => cd.Date == oldCalDay.Date) ?? new CalendarDay { Date = oldCalDay.Date, Slots = new List<Slot>() };
-                messages.AddRange(CompareCalDays(oldCalDay, newCalDay));
 
-                if(oldCalDay.Date > maxOldCalDayDate)
+            foreach (var newCalDay in newValue.CalendarDays)
+            {
+                if (newCalDay.Slots.Any(s => s.Availability == AvailabilityNames.Free))
                 {
-                    maxOldCalDayDate = oldCalDay.Date;
+                    var oldCalDay = oldValue.CalendarDays.SingleOrDefault(cd => cd.Date == newCalDay.Date);
+                    messages.AddRange(CompareCalDays(oldCalDay, newCalDay));
                 }
             }
-
-            // capture new free bookings
-
 
             return messages;
         }
 
-        private static IEnumerable<string> CompareCalDays(CalendarDay oldCalDay, CalendarDay newCalDay)
+        private static IList<string> CompareCalDays(CalendarDay oldCalDay, CalendarDay newCalDay)
         {
-            throw new NotImplementedException();
+            if (newCalDay == null) throw new ArgumentNullException("newCalDay");
+            if(oldCalDay == null)
+            {
+                oldCalDay = new CalendarDay { Date = newCalDay.Date, Slots = new List<Slot>() };
+            }
+
+            if (oldCalDay.Date != newCalDay.Date) throw new Exception($"Old cal day date '{oldCalDay.Date}' does not match new cal day date '{newCalDay.Date}'");
+
+            var messages = new List<string>();
+
+            var newFeeSlots = newCalDay.Slots.Where(s => s.Availability == AvailabilityNames.Free).ToList();
+            foreach(var newFreeSlot in newFeeSlots)
+            {
+                var matchedOldLSlot = oldCalDay.Slots.SingleOrDefault(s => s.Time == newFreeSlot.Time);
+                if(matchedOldLSlot == null || (matchedOldLSlot != null && matchedOldLSlot.Availability != newFreeSlot.Availability))
+                {
+                    messages.Add($"{newCalDay.Date:dd-MM} {newFreeSlot.Time} is available");
+                }
+            }
+
+            return messages;
         }
     }
 }

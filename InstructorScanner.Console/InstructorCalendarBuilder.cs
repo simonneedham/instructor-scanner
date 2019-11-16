@@ -36,8 +36,8 @@ namespace InstructorScanner.ConsoleApp
                     {
                         var calDay = await bpp.GetBookings(parseDate, _appSettings.InstructorName);
                         instructor.CalendarDays.Add(calDay);
-                        _logger.LogInformation($"Found {calDay.Slots.Where(w => w.Availability == AvailabilityNames.Free).ToList().Count } free booking slots.");
-                        _logger.LogInformation(string.Empty);
+                        //_logger.LogInformation($"Found {calDay.Slots.Where(w => w.Availability == AvailabilityNames.Free).ToList().Count } free booking slots.");
+                        //_logger.LogInformation(string.Empty);
                     }
                     catch (Exception ex)
                     {
