@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace InstructorScanner.ConsoleApp
 {
-    class BookingPageParser : IDisposable
+    public class BookingPageParser : IDisposable
     {
         private readonly AppSettings _appSettings;
         private readonly ILogger _logger;

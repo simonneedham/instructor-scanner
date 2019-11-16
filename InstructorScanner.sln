@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.902
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InstructorScanner.ConsoleApp", "InstructorScanner.Console\InstructorScanner.ConsoleApp.csproj", "{6DE6BD90-61FE-4977-9D46-EC823709D1FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstructorScanner.FunctionApp", "InstructorScanner.FunctionApp\InstructorScanner.FunctionApp.csproj", "{EBB637C4-660C-43B5-B80C-19E0477ED26E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstructorScanner.Core", "InstructorScanner.Core\InstructorScanner.Core.csproj", "{D5AFDD77-F56C-4196-BCD5-44BC55899734}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{6DE6BD90-61FE-4977-9D46-EC823709D1FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DE6BD90-61FE-4977-9D46-EC823709D1FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DE6BD90-61FE-4977-9D46-EC823709D1FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBB637C4-660C-43B5-B80C-19E0477ED26E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBB637C4-660C-43B5-B80C-19E0477ED26E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBB637C4-660C-43B5-B80C-19E0477ED26E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBB637C4-660C-43B5-B80C-19E0477ED26E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5AFDD77-F56C-4196-BCD5-44BC55899734}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5AFDD77-F56C-4196-BCD5-44BC55899734}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5AFDD77-F56C-4196-BCD5-44BC55899734}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5AFDD77-F56C-4196-BCD5-44BC55899734}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

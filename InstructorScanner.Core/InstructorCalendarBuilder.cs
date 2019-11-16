@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InstructorScanner.ConsoleApp
 {
-    class InstructorCalendarBuilder
+    public class InstructorCalendarBuilder
     {
         private readonly AppSettings _appSettings;
         private readonly ILogger _logger;

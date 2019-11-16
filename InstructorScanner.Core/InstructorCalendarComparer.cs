@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace InstructorScanner.ConsoleApp
 {
-    static class InstructorCalendarComparer
+    static public class InstructorCalendarComparer
     {
         public static List<string> Compare(InstructorCalendar oldValue, InstructorCalendar newValue)
         {
