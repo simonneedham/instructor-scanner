@@ -9,5 +9,6 @@
         public string BookingPage { get; set; }
         public string InstructorName { get; set; }
         public int DaysToScan { get; set; }
+        public string StorageConnectionString { get; set; }
     }
 }

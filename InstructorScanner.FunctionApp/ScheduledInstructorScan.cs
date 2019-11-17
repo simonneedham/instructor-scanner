@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace InstructorScanner.FunctionApp
 {
-    public static class InstructorScheduledScan
+    public static class ScheduledInstructorScan
     {
-        [FunctionName("InstructorScheduledScan")]
+        [FunctionName(nameof(ScheduledInstructorScan))]
         public static void Run([TimerTrigger("0 5 8,12,16,20 * * *")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
