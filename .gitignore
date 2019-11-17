@@ -5,6 +5,7 @@
 
 # project specific files
 appsettings.json
+local.settings.json
 
 # User-specific files
 *.suo
