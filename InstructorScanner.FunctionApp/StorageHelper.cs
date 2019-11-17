@@ -4,6 +4,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace InstructorScanner.FunctionApp
@@ -46,21 +47,13 @@ namespace InstructorScanner.FunctionApp
             var cloudBlobContainer = _cloudBlobClient.Value.GetContainerReference(containerName);
 
             var blockBlob = cloudBlobContainer.GetBlockBlobReference(fileName);
-
-            using (var ms = new MemoryStream())
-            {
-                await blockBlob.DownloadToStreamAsync(ms);
-
-                using (var sr = new StreamReader(ms))
-                {
-                    return await sr.ReadToEndAsync();
-                }
-            }
+            return await blockBlob.DownloadTextAsync();
         }
 
-        public Task SaveFileAsync(string containerName, string fileName, string fileContents)
+        public async Task SaveFileAsync(string containerName, string fileName, string fileContents)
         {
-            return Task.CompletedTask;
+            var cloudBlockBlob = _cloudBlobClient.Value.GetContainerReference(containerName).GetBlockBlobReference(fileName);
+            await cloudBlockBlob.UploadTextAsync(fileContents);
         }
     }
 }
