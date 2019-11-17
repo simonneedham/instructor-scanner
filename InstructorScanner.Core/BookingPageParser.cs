@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace InstructorScanner.ConsoleApp
+namespace InstructorScanner.Core
 {
     public class BookingPageParser : IDisposable
     {

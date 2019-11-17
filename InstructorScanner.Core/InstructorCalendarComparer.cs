@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace InstructorScanner.ConsoleApp
+namespace InstructorScanner.Core
 {
     static public class InstructorCalendarComparer
     {

@@ -1,4 +1,4 @@
-﻿namespace InstructorScanner.ConsoleApp
+﻿namespace InstructorScanner.Core
 {
     public class Slot
     {

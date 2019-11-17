@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using InstructorScanner.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -22,11 +23,13 @@ namespace InstructorScanner.ConsoleApp
                 .GetSection("AppSettings")
                 .Bind(appSettings);
 
-            var loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder
-                    .AddConsole();
-            });
+            var loggerFactory = new LoggerFactory().AddConsole();
+
+            //var loggerFactory = LoggerFactory.Create(builder =>
+            //{
+            //    builder
+            //        .AddConsole();
+            //});
 
             var logger = loggerFactory.CreateLogger("InstructorScanner.ConsoleApp");
             var jsonSerializer = new JsonSerializer();

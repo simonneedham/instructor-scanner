@@ -1,7 +1,7 @@
 ﻿
 using System.Collections.Generic;
 
-namespace InstructorScanner.ConsoleApp
+namespace InstructorScanner.Core
 {
     public class InstructorCalendar
     {
