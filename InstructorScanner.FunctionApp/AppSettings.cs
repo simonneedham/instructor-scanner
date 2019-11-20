@@ -1,4 +1,4 @@
-﻿namespace InstructorScanner.Core
+﻿namespace InstructorScanner.FunctionApp
 {
     public class AppSettings
     {

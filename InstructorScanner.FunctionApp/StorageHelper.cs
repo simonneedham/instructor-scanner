@@ -1,4 +1,4 @@
-﻿using InstructorScanner.Core;
+﻿using InstructorScanner.FunctionApp;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;

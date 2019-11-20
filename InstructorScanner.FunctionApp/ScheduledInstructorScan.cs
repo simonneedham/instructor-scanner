@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using InstructorScanner.Core;
+using InstructorScanner.FunctionApp;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -13,52 +13,48 @@ namespace InstructorScanner.FunctionApp
     public class ScheduledInstructorScan
     {
         private readonly IOptions<AppSettings> _appSettings;
+        private readonly IPreviousInstructorCalendarService _previousInstructorCalendarService;
+        private readonly ISendEmailService _sendEmailService;
         private readonly IStorageHelper _storageHelper;
 
         public ScheduledInstructorScan(
             IOptions<AppSettings> appSettings,
+            IPreviousInstructorCalendarService previousInstructorCalendarService,
+            ISendEmailService sendEmailService,
             IStorageHelper storageHelper
         )
         {
             _appSettings = appSettings;
+            _previousInstructorCalendarService = previousInstructorCalendarService;
+            _sendEmailService = sendEmailService;
             _storageHelper = storageHelper;
         }
 
         [FunctionName(nameof(ScheduledInstructorScan))]
         //public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *")]TimerInfo myTimer, ILogger logger)
-        public async Task Run([TimerTrigger("0 08 20 17 11 *")]TimerInfo myTimer, ILogger logger)
+        public async Task Run([TimerTrigger("0 10 00 20 11 *")]TimerInfo myTimer, ILogger logger)
         {
             logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
+            var previousInstructorCalendar = await _previousInstructorCalendarService.Retrieve();
 
-            InstructorCalendar oldInstructorCalendar;
-            if (await _storageHelper.FileExistsAsync("instructor-scan", "instructor-bookings.json"))
-            {
-                oldInstructorCalendar = JsonConvert.DeserializeObject<InstructorCalendar>(await _storageHelper.ReadFileAsync("instructor-scan", "instructor-bookings.json"));
-            }
-            else
-            {
-                oldInstructorCalendar = new InstructorCalendar
-                {
-                    CalendarDays = new List<CalendarDay>(),
-                    Name = _appSettings.Value.InstructorName
-                };
-            }
-
-            var icb = new InstructorCalendarBuilder(_appSettings.Value, logger);
+            var icb = new InstructorCalendarBuilder(_appSettings, logger);
             var newInstructorCalendar = await icb.BuildInstructorAsync(_appSettings.Value.InstructorName);
 
-            var calendarChanges = InstructorCalendarComparer.Compare(oldInstructorCalendar, newInstructorCalendar);
-
+            var calendarChanges = InstructorCalendarComparer.Compare(previousInstructorCalendar, newInstructorCalendar);
 
             var newInstructorCalendarText = JsonConvert.SerializeObject(newInstructorCalendar);
             await _storageHelper.SaveFileAsync("instructor-scan", "instructor-bookings.json", newInstructorCalendarText);
 
-            foreach (var msg in calendarChanges)
+            if (calendarChanges.Count > 0)
             {
-                logger.LogInformation(msg);
+                logger.LogInformation($"{calendarChanges.Count} calendar changes found.");
+                await _sendEmailService.SendEmailAsync("CFI Booking Scan Results", calendarChanges);
             }
-
+            else
+            {
+                logger.LogInformation("No calendar changes found.");
+            }
         }
     }
 }
