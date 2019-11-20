@@ -31,8 +31,8 @@ namespace InstructorScanner.FunctionApp
         }
 
         [FunctionName(nameof(ScheduledInstructorScan))]
-        //public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *")]TimerInfo myTimer, ILogger logger)
-        public async Task Run([TimerTrigger("0 10 00 20 11 *")]TimerInfo myTimer, ILogger logger)
+        public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *")]TimerInfo myTimer, ILogger logger)
+        //public async Task Run([TimerTrigger("0 10 00 20 11 *")]TimerInfo myTimer, ILogger logger)
         {
             logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
