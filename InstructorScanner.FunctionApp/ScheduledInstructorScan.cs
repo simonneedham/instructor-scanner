@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using SendGrid;
 
 namespace InstructorScanner.FunctionApp
 {
@@ -49,7 +50,7 @@ namespace InstructorScanner.FunctionApp
             if (calendarChanges.Count > 0)
             {
                 logger.LogInformation($"{calendarChanges.Count} calendar changes found.");
-                await _sendEmailService.SendEmailAsync("CFI Booking Scan Results", calendarChanges);
+                await _sendEmailService.SendEmailAsync("CFI Booking Scan Results", calendarChanges, MimeType.Text);
             }
             else
             {

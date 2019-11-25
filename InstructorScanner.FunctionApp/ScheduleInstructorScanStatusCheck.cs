@@ -52,7 +52,7 @@ namespace InstructorScanner.FunctionApp
             }
 
 
-            await _sendEmailService.SendEmailAsync("Instructor Scan Status", emailContent);
+            await _sendEmailService.SendEmailAsync("Instructor Scan Status", emailContent, MimeType.Text);
         }
     }
 }
