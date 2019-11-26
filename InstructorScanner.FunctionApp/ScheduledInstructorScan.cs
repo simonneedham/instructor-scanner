@@ -47,14 +47,11 @@ namespace InstructorScanner.FunctionApp
             var newInstructorCalendarText = JsonConvert.SerializeObject(newInstructorCalendar);
             await _storageHelper.SaveFileAsync("instructor-scan", "instructor-bookings.json", newInstructorCalendarText);
 
+            logger.LogInformation($"{calendarChanges.Count} calendar changes found.");
             if (calendarChanges.Count > 0)
             {
-                logger.LogInformation($"{calendarChanges.Count} calendar changes found.");
+                logger.LogInformation("New changes found, sending an email.");
                 await _sendEmailService.SendEmailAsync("CFI Booking Scan Results", calendarChanges, MimeType.Text);
-            }
-            else
-            {
-                logger.LogInformation("No calendar changes found.");
             }
         }
     }

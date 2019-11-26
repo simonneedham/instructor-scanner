@@ -54,6 +54,8 @@ namespace InstructorScanner.FunctionApp
         {
             try
             {
+                _logger.LogInformation("Started");
+
                 var message = new SendGridMessage();
                 message.AddTo(_appSettings.Value.EmailAddress);
                 message.SetFrom(_appSettings.Value.EmailAddress);
@@ -71,6 +73,10 @@ namespace InstructorScanner.FunctionApp
             {
                 _logger.LogError(ex, "Unable to send an email");
                 throw;
+            }
+            finally
+            {
+                _logger.LogInformation("Finshed");
             }
         }
     }
