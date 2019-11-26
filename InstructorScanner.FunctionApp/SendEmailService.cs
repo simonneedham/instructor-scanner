@@ -91,9 +91,9 @@ namespace InstructorScanner.FunctionApp
 
         private string BuildMessageBody(IList<string> messageBody, string mimeType)
         {
-            if (mimeType == MimeType.Text) return string.Join("\n", messageBody);
+            if (mimeType == MimeType.Text) return string.Join("\r\n", messageBody);
 
-            var htmlParas = messageBody.Select(s => $"<p>{s}</p>\n").ToList(); ;
+            var htmlParas = messageBody.Select(s => $"{s}<br>\r\n").ToList();
             return string.Join("", htmlParas);
         }
     }

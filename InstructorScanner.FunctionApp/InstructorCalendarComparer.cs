@@ -48,7 +48,7 @@ namespace InstructorScanner.FunctionApp
                 var matchedOldLSlot = oldCalDay.Slots.SingleOrDefault(s => s.Time == newFreeSlot.Time);
                 if(matchedOldLSlot == null || (matchedOldLSlot != null && matchedOldLSlot.Availability != newFreeSlot.Availability))
                 {
-                    messages.Add($"{newCalDay.Date:dd-MM} {newFreeSlot.Time} is available");
+                    messages.Add($"{newCalDay.Date:ddd dd-MMM} {newFreeSlot.Time} is available");
                 }
             }
 

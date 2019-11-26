@@ -30,7 +30,7 @@ namespace InstructorScanner.FunctionApp
 
         [FunctionName(nameof(ScheduledInstructorScan))]
         public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *")]TimerInfo myTimer, ILogger logger)
-        //public async Task Run([TimerTrigger("0 16 15 26 11 *")]TimerInfo myTimer, ILogger logger)
+        //public async Task Run([TimerTrigger("0 25 19 26 11 *")]TimerInfo myTimer, ILogger logger)
         {
             logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
@@ -48,7 +48,7 @@ namespace InstructorScanner.FunctionApp
             if (calendarChanges.Count > 0)
             {
                 logger.LogInformation("New changes found, sending an email.");
-                await _sendEmailService.SendEmailAsync("CFI Booking Scan Results", calendarChanges, MimeType.Text);
+                await _sendEmailService.SendEmailAsync("CFI Booking Scan Results", calendarChanges, MimeType.Html);
             }
         }
     }
