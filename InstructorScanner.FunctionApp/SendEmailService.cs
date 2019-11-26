@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
+using System.Net;
 
 namespace InstructorScanner.FunctionApp
 {
@@ -40,44 +41,60 @@ namespace InstructorScanner.FunctionApp
             return SendEmailAsync(subject, messageBody, MimeType.Text);
         }
 
-        public Task SendEmailAsync(string subject, string messageBody, string mimeType)
-        {
-            return SendEmailAsync(subject, new List<string> { messageBody }, mimeType);
-        }
-
         public Task SendEmailAsync(string subject, IList<string> messageBody)
         {
-            return SendEmailAsync(subject, messageBody, MimeType.Html);
+            return SendEmailAsync(subject, messageBody, MimeType.Text);
         }
 
-        public async Task SendEmailAsync(string subject, IList<string> messageBody, string mimeType)
+        public Task SendEmailAsync(string subject, IList<string> messageBody, string mimeType)
+        {
+            return SendEmailAsync(subject, BuildMessageBody(messageBody, mimeType), mimeType);
+        }
+
+        public async Task SendEmailAsync(string subject, string messageBody, string mimeType)
         {
             try
             {
-                _logger.LogInformation("Started");
-
                 var message = new SendGridMessage();
                 message.AddTo(_appSettings.Value.EmailAddress);
                 message.SetFrom(_appSettings.Value.EmailAddress);
                 message.SetSubject(subject);
+                message.AddContent(mimeType, messageBody);
 
-                foreach (var msgLine in messageBody)
+                var response = await _sendGridClient.SendEmailAsync(message);
+                if (response == null) throw new Exception("Send Grid failed to return a response");
+
+                var statusCode = (int)response.StatusCode;
+                if(statusCode >= 200 && statusCode<= 299)
                 {
-                    message.AddContent(mimeType, msgLine);
+                    _logger.LogInformation("Sent email with subject '{subject}' to {emailAddress} at {sentDateTime:dd-MMM-yyyy HH:mm:ss}", subject, _appSettings.Value.EmailAddress, DateTime.UtcNow);
                 }
+                else
+                {
+                    var errorMsg = $"SendGrid request failed. Status code {statusCode} was returned.";
+                    
+                    var responseBody = response.DeserializeResponseBody(response.Body);
+                    if(responseBody != null && responseBody.TryGetValue("errors", out var errors))
+                    {
+                        errorMsg += "\n" + errors.ToString();
+                    }
 
-                await _sendGridClient.SendEmailAsync(message);
-                _logger.LogInformation("Sent email with subject '{subject}' to {emailAddress} at {sentDateTime:dd-MMM-yyyy HH:mm:ss}", subject, _appSettings.Value.EmailAddress, DateTime.UtcNow);
+                    throw new Exception(errorMsg);
+                }
             }
             catch(Exception ex)
             {
                 _logger.LogError(ex, "Unable to send an email");
                 throw;
             }
-            finally
-            {
-                _logger.LogInformation("Finshed");
-            }
+        }
+
+        private string BuildMessageBody(IList<string> messageBody, string mimeType)
+        {
+            if (mimeType == MimeType.Text) return string.Join("\n", messageBody);
+
+            var htmlParas = messageBody.Select(s => $"<p>{s}</p>\n").ToList(); ;
+            return string.Join("", htmlParas);
         }
     }
 }
