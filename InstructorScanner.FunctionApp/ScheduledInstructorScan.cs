@@ -48,7 +48,7 @@ namespace InstructorScanner.FunctionApp
             if (calendarChanges.Count > 0)
             {
                 logger.LogInformation("New changes found, sending an email.");
-                await _sendEmailService.SendEmailAsync("CFI Booking Scan Results", calendarChanges, MimeType.Html);
+                await _sendEmailService.SendEmailAsync("FI Booking Scan Results", calendarChanges, MimeType.Html);
             }
         }
     }
