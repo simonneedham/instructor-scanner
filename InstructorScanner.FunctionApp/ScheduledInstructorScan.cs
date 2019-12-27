@@ -31,7 +31,8 @@ namespace InstructorScanner.FunctionApp
         public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *")]TimerInfo myTimer, ILogger logger)
         //public async Task Run([TimerTrigger("0 57 00 23 12 *")]TimerInfo myTimer, ILogger logger)
         {
-            logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+            var instructorCount = _appSettings.Value.Instructors.Count;
+            logger.LogInformation($"Initiating scan for of {instructorCount} instructors for {_appSettings.Value.DaysToScan} days at {DateTime.Now}");
 
             var previousCalendarDays = await _calendarDaysPersistanceService.Retrieve();
 
@@ -41,7 +42,7 @@ namespace InstructorScanner.FunctionApp
             await _calendarDaysPersistanceService.Store(newCalendarDays);
 
             logger.LogInformation($"{calendarChanges.Count} calendar changes found.");
-            if (calendarChanges.Count > 0)
+            if (calendarChanges.Count > (instructorCount*2))
             {
                 logger.LogInformation("New changes found, sending an email.");
                 await _sendEmailService.SendEmailAsync("FI Booking Scan Results", calendarChanges, MimeType.Html);
