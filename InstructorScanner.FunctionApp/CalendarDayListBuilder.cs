@@ -6,26 +6,31 @@ using System.Threading.Tasks;
 
 namespace InstructorScanner.FunctionApp
 {
-    public class InstructorCalendarBuilder
+    public interface ICalendarDayListBuilder
+    {
+        Task<List<CalendarDay>> BuildAsync();
+    }
+
+    public class CalendarDayListBuilder : ICalendarDayListBuilder
     {
         private readonly IOptions<AppSettings> _appSettings;
-        private readonly ILogger _logger;
+        private readonly ILogger<CalendarDayListBuilder> _logger;
 
-        public InstructorCalendarBuilder(
+        public CalendarDayListBuilder(
             IOptions<AppSettings> appSettings,
-            ILogger logger
+            ILogger<CalendarDayListBuilder> logger
         )
         {
             _appSettings = appSettings;
             _logger = logger;
         }
 
-        public async Task<InstructorCalendar> BuildInstructorAsync(string instructorName)
+        public async Task<List<CalendarDay>> BuildAsync()
         {
-            var instructor = new InstructorCalendar { Name = _appSettings.Value.InstructorName, CalendarDays = new List<CalendarDay>() };
+            var calendarDays = new List<CalendarDay>();
 
             var today = DateTime.Today;
-            using (var bpp = new BookingPageParser(_appSettings.Value, _logger))
+            using (var bpp = new BookingPageParser(_appSettings, _logger))
             {
                 for (var d = 0; d < _appSettings.Value.DaysToScan; d++)
                 {
@@ -34,8 +39,8 @@ namespace InstructorScanner.FunctionApp
 
                     try
                     {
-                        var calDay = await bpp.GetBookings(parseDate, _appSettings.Value.InstructorName);
-                        instructor.CalendarDays.Add(calDay);
+                        var calDay = await bpp.GetBookings(parseDate, _appSettings.Value.Instructors);
+                        calendarDays.Add(calDay);
                     }
                     catch (Exception ex)
                     {
@@ -46,7 +51,7 @@ namespace InstructorScanner.FunctionApp
                 }
             }
 
-            return instructor;
+            return calendarDays;
         }
     }
 }

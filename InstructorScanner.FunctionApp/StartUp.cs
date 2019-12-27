@@ -32,7 +32,8 @@ namespace InstructorScanner.FunctionApp
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<AppSettings>>();
 
-            builder.Services.AddScoped<IPreviousInstructorCalendarService, PreviousInstructorCalendarService>();
+            builder.Services.AddScoped<ICalendarDayListBuilder, CalendarDayListBuilder>();
+            builder.Services.AddScoped<ICalendarDaysPersistanceService, CalendarDaysPersistanceService>();
             builder.Services.AddScoped<ISendEmailService, SendEmailService>();
             builder.Services.AddScoped<IStorageHelper, StorageHelper>();
             builder.Services.AddScoped<ISendGridClient>(ifact => new SendGridClient(appSettings.Value.SendGridApiKey));

@@ -6,6 +6,7 @@ namespace InstructorScanner.FunctionApp
     public class CalendarDay
     {
         public DateTime Date { get; set; }
-        public List<Slot> Slots { get; set; }
+
+        public List<InstructorSlots> InstructorSlots { get; set; }
     }
 }
