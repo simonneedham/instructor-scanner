@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,21 +13,21 @@ namespace InstructorScanner.FunctionApp
     public class BookingPageParser : IDisposable
     {
         private readonly AppSettings _appSettings;
-        private readonly ILogger _logger;
+        private readonly ILogger<CalendarDayListBuilder> _logger;
         private CookieContainer _cookies;
         private HttpClientHandler _httpClientHandler;
         private HttpClient _httpClient;
         private readonly Uri _rootUrl;
 
 
-        public BookingPageParser(AppSettings appSettings, ILogger logger)
+        public BookingPageParser(IOptions<AppSettings> appSettingsOptions, ILogger<CalendarDayListBuilder> logger)
         {
-            _appSettings = appSettings;
+            _appSettings = appSettingsOptions.Value;
             _logger = logger;
-            _rootUrl = new Uri(appSettings.RootUrl);
+            _rootUrl = new Uri(appSettingsOptions.Value.RootUrl);
         }
 
-        public async Task<CalendarDay> GetBookings(DateTime date, string instructorName)
+        public async Task<CalendarDay> GetBookings(DateTime date, List<Instructor> instructors)
         {
             if (_httpClient == null)
                 await InitHttpClientAsync();
@@ -53,40 +54,51 @@ namespace InstructorScanner.FunctionApp
             }
 
             //- Find row where tr / td innerText = 'Instructor Name'
-            var slots = new List<Slot>();
-            var instructorRowNode = tableBookings.SelectSingleNode($".//tr[td='{instructorName}']");
-            if (instructorRowNode != null)
+            var instructorSlotsList = new List<InstructorSlots>();
+            foreach (var instctr in instructors)
             {
-
-                _logger.LogInformation("Found instructor row");
-
-                var originalBookingTds = instructorRowNode.SelectNodes(".//td[not(@class='HeaderCellAc')]");
-                var bookings = new List<string>();
-                foreach (var tdNode in originalBookingTds)
+                var instructorSlots = new InstructorSlots
                 {
-                    var status = BookingStatus(tdNode);
-                    var statusCount = GetColSpanValue(tdNode);
+                    InstructorInitials = instctr.Initials,
+                    Slots = new List<Slot>()
+                };
 
-                    for (var i = 0; i < statusCount; i++)
+                var instructorRowNode = tableBookings.SelectSingleNode($".//tr[td='{instctr.Name}']");
+                if (instructorRowNode != null)
+                {
+
+                    _logger.LogInformation("Found instructor row");
+
+                    var originalBookingTds = instructorRowNode.SelectNodes(".//td[not(@class='HeaderCellAc')]");
+                    var bookings = new List<string>();
+                    foreach (var tdNode in originalBookingTds)
                     {
-                        bookings.Add(status);
+                        var status = BookingStatus(tdNode);
+                        var statusCount = GetColSpanValue(tdNode);
+
+                        for (var i = 0; i < statusCount; i++)
+                        {
+                            bookings.Add(status);
+                        }
+                    }
+
+                    if (times.Count != bookings.Count)
+                        throw new Exception("Eeek!! Time slot count doesn't match bookings count!");
+
+
+                    for (var i = 0; i < bookings.Count; i++)
+                    {
+                        instructorSlots.Slots.Add(new Slot { Availability = bookings[i], Time = times[i] });
                     }
                 }
 
-                if (times.Count != bookings.Count)
-                    throw new Exception("Eeek!! Time slot count doesn't match bookings count!");
-
-
-                for (var i = 0; i < bookings.Count; i++)
-                {
-                    slots.Add(new Slot { Availability = bookings[i], Time = times[i] });
-                }
+                instructorSlotsList.Add(instructorSlots);
             }
 
             var calendarDay = new CalendarDay
             {
                 Date = date,
-                Slots = slots
+                InstructorSlots = instructorSlotsList
             };
 
             return calendarDay;

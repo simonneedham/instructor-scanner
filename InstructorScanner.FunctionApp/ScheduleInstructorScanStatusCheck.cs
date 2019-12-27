@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SendGrid;
-using SendGrid.Helpers.Mail;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,17 +12,17 @@ namespace InstructorScanner.FunctionApp
     {
         private readonly IOptions<AppSettings> _appSettings;
         private readonly ISendEmailService _sendEmailService;
-        private readonly IPreviousInstructorCalendarService _previousInstructorCalendarService;
+        private readonly ICalendarDaysPersistanceService _calendarDayPersistanceService;
 
         public ScheduleInstructorScanStatusCheck(
             IOptions<AppSettings> appSettings,
             ISendEmailService sendEmailService,
-            IPreviousInstructorCalendarService previousInstructorCalendarService
+            ICalendarDaysPersistanceService calendarDayPersistanceService
         )
         {
             _appSettings = appSettings;
             _sendEmailService = sendEmailService;
-            _previousInstructorCalendarService = previousInstructorCalendarService;
+            _calendarDayPersistanceService = calendarDayPersistanceService;
         }
 
         [FunctionName(nameof(ScheduleInstructorScanStatusCheck))]
@@ -33,22 +32,34 @@ namespace InstructorScanner.FunctionApp
         )
         {
             var emailContent = new List<string>();
-            var previousInstructorCalendar = await _previousInstructorCalendarService.Retrieve();
+            var previousCalendarDays = await _calendarDayPersistanceService.Retrieve();
 
-            if(previousInstructorCalendar == null)
+            if(previousCalendarDays == null)
             {
-                emailContent.Add("Unable to retrieve a previous instructor calendar.");
+                emailContent.Add("Unable to retrieve previous calendar days.");
             }
             else
             {
-                var freeBookingCount = previousInstructorCalendar
-                    .CalendarDays
-                    .SelectMany(cd => cd.Slots)
-                    .Where(s => s.Availability == AvailabilityNames.Free)
-                    .ToList()
-                    .Count;
+                emailContent.Add("Currently tracking the following instructors/slots:");
+                emailContent.Add(string.Empty);
 
-                emailContent.Add($"There are currently {freeBookingCount} free slots being tracked.");
+                var distinctIntials = previousCalendarDays
+                    .SelectMany(cd => cd.InstructorSlots)
+                    .Select(iSlots => iSlots.InstructorInitials)
+                    .Distinct()
+                    .ToList();
+
+                foreach(var initial in distinctIntials)
+                {
+                    var freeSlotCount = previousCalendarDays
+                        .SelectMany(cd => cd.InstructorSlots)
+                        .GroupBy(instructorSlots => instructorSlots.InstructorInitials)
+                        .Where(grp => grp.Key == initial)
+                        .Select(grp => grp.Sum(iSlots => iSlots.Slots.Where(s => s.Availability == AvailabilityNames.Free).ToList().Count))
+                        .Sum();
+
+                    emailContent.Add($"    {initial}: {freeSlotCount} slots");
+                }
             }
 
 
