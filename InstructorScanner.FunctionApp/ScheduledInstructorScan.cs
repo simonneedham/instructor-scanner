@@ -32,7 +32,7 @@ namespace InstructorScanner.FunctionApp
         //public async Task Run([TimerTrigger("0 57 00 23 12 *")]TimerInfo myTimer, ILogger logger)
         {
             var instructorCount = _appSettings.Value.Instructors.Count;
-            logger.LogInformation($"Initiating scan for of {instructorCount} instructors for {_appSettings.Value.DaysToScan} days at {DateTime.Now}");
+            logger.LogInformation($"Initiating scan for of {instructorCount} instructors for {_appSettings.Value.DaysToScan} days at {DateTime.Now: dd-MMM-yyy HH:mm:ss}");
 
             var previousCalendarDays = await _calendarDaysPersistanceService.Retrieve();
 
@@ -46,6 +46,10 @@ namespace InstructorScanner.FunctionApp
             {
                 logger.LogInformation("New changes found, sending an email.");
                 await _sendEmailService.SendEmailAsync("FI Booking Scan Results", calendarChanges, MimeType.Html);
+            }
+            else
+            {
+                logger.LogInformation($"Not sending an email as {calendarChanges.Count} calender changes line count is less than or equal to the minimum of {instructorCount * 2}");
             }
         }
     }
