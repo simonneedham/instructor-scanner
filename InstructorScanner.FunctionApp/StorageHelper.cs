@@ -53,6 +53,13 @@ namespace InstructorScanner.FunctionApp
         public async Task SaveFileAsync(string containerName, string fileName, string fileContents)
         {
             var cloudBlockBlob = _cloudBlobClient.Value.GetContainerReference(containerName).GetBlockBlobReference(fileName);
+
+            if(Path.GetExtension(fileName) == ".html")
+            {
+                cloudBlockBlob.Properties.ContentType = "text/html";
+                await cloudBlockBlob.SetPropertiesAsync();
+            }
+
             await cloudBlockBlob.UploadTextAsync(fileContents);
         }
     }

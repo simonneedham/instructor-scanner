@@ -34,6 +34,7 @@ namespace InstructorScanner.FunctionApp
 
             builder.Services.AddScoped<ICalendarDayListBuilder, CalendarDayListBuilder>();
             builder.Services.AddScoped<ICalendarDaysPersistanceService, CalendarDaysPersistanceService>();
+            builder.Services.AddScoped<IHtmlPageCreatorService, HtmlPageCreatorService>();
             builder.Services.AddScoped<ISendEmailService, SendEmailService>();
             builder.Services.AddScoped<IStorageHelper, StorageHelper>();
             builder.Services.AddScoped<ISendGridClient>(ifact => new SendGridClient(appSettings.Value.SendGridApiKey));

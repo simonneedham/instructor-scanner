@@ -12,18 +12,21 @@ namespace InstructorScanner.FunctionApp
         private readonly IOptions<AppSettings> _appSettings;
         private readonly ICalendarDayListBuilder _calendarDayListBuilder;
         private readonly ICalendarDaysPersistanceService _calendarDaysPersistanceService;
+        private readonly IHtmlPageCreatorService _htmlPageCreatorService;
         private readonly ISendEmailService _sendEmailService;
 
         public ScheduledInstructorScan(
             IOptions<AppSettings> appSettings,
             ICalendarDayListBuilder calendarDayListBuilder,
             ICalendarDaysPersistanceService calendarDaysPersistanceService,
+            IHtmlPageCreatorService htmlPageCreatorService,
             ISendEmailService sendEmailService
         )
         {
             _appSettings = appSettings;
             _calendarDayListBuilder = calendarDayListBuilder;
             _calendarDaysPersistanceService = calendarDaysPersistanceService;
+            _htmlPageCreatorService = htmlPageCreatorService;
             _sendEmailService = sendEmailService;
         }
 
@@ -34,17 +37,22 @@ namespace InstructorScanner.FunctionApp
             var instructorCount = _appSettings.Value.Instructors.Count;
             logger.LogInformation($"Initiating scan for of {instructorCount} instructors for {_appSettings.Value.DaysToScan} days at {DateTime.Now: dd-MMM-yyy HH:mm:ss}");
 
-            var previousCalendarDays = await _calendarDaysPersistanceService.Retrieve();
+            var previousCalendarDays = await _calendarDaysPersistanceService.RetrieveAsync();
 
             var newCalendarDays = await _calendarDayListBuilder.BuildAsync();
             var calendarChanges = CalendarDaysComparer.Compare(previousCalendarDays, newCalendarDays);
 
-            await _calendarDaysPersistanceService.Store(newCalendarDays);
+            await _calendarDaysPersistanceService.StoreAsync(newCalendarDays);
+            await _htmlPageCreatorService.CreateHtmlPageAsync(newCalendarDays);
 
             logger.LogInformation($"{calendarChanges.Count} calendar changes found.");
             if (calendarChanges.Count > (instructorCount*2))
             {
                 logger.LogInformation("New changes found, sending an email.");
+
+                calendarChanges.Add(string.Empty);
+                calendarChanges.Add($"Slot summary: {_appSettings.Value.WebRootUrl}");
+
                 await _sendEmailService.SendEmailAsync("FI Booking Scan Results", calendarChanges, MimeType.Html);
             }
             else

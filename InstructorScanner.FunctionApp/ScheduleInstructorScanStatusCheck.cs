@@ -32,7 +32,7 @@ namespace InstructorScanner.FunctionApp
         )
         {
             var emailContent = new List<string>();
-            var previousCalendarDays = await _calendarDayPersistanceService.Retrieve();
+            var previousCalendarDays = await _calendarDayPersistanceService.RetrieveAsync();
 
             if(previousCalendarDays == null)
             {
@@ -62,6 +62,8 @@ namespace InstructorScanner.FunctionApp
                 }
             }
 
+            emailContent.Add(string.Empty);
+            emailContent.Add($"Slot summary: {_appSettings.Value.WebRootUrl}");
 
             await _sendEmailService.SendEmailAsync("Instructor Scan Status", emailContent, MimeType.Text);
         }
