@@ -32,7 +32,7 @@ namespace InstructorScanner.FunctionApp
         )
         {
             var emailContent = new List<string>();
-            var previousCalendarDays = await _calendarDayPersistanceService.Retrieve();
+            var previousCalendarDays = await _calendarDayPersistanceService.RetrieveAsync();
 
             if(previousCalendarDays == null)
             {
@@ -43,25 +43,17 @@ namespace InstructorScanner.FunctionApp
                 emailContent.Add("Currently tracking the following instructors/slots:");
                 emailContent.Add(string.Empty);
 
-                var distinctIntials = previousCalendarDays
-                    .SelectMany(cd => cd.InstructorSlots)
-                    .Select(iSlots => iSlots.InstructorInitials)
-                    .Distinct()
-                    .ToList();
+                var distinctIntials = previousCalendarDays.GetDistinctIntials();
 
                 foreach(var initial in distinctIntials)
                 {
-                    var freeSlotCount = previousCalendarDays
-                        .SelectMany(cd => cd.InstructorSlots)
-                        .GroupBy(instructorSlots => instructorSlots.InstructorInitials)
-                        .Where(grp => grp.Key == initial)
-                        .Select(grp => grp.Sum(iSlots => iSlots.Slots.Where(s => s.Availability == AvailabilityNames.Free).ToList().Count))
-                        .Sum();
-
+                    var freeSlotCount = previousCalendarDays.CalculateTotalSlotCountForInstructor(initial);
                     emailContent.Add($"    {initial}: {freeSlotCount} slots");
                 }
             }
 
+            emailContent.Add(string.Empty);
+            emailContent.Add($"Slot summary: {_appSettings.Value.WebRootUrl}");
 
             await _sendEmailService.SendEmailAsync("Instructor Scan Status", emailContent, MimeType.Text);
         }
