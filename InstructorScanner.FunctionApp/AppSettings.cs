@@ -13,7 +13,8 @@ namespace InstructorScanner.FunctionApp
         public int DaysToScan { get; set; }
         public string StorageConnectionString { get; set; }
         public string SendGridApiKey { get; set; }
-        public string EmailAddress { get; set; }
+        public string ToEmailAddress { get; set; }
+        public string FromEmailAddress { get; set; }
         public string WebRootUrl { get; set; }
     }
 }
