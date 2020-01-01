@@ -18,11 +18,11 @@ namespace InstructorScanner.FunctionApp
             _htmlPageCreatorService = htmlPageCreatorService;
         }
 
-        //[FunctionName(nameof(TestHtmlReport))]
-        //public async Task Run([TimerTrigger("0 57 00 23 12 *", RunOnStartup = true)]TimerInfo myTimer, ILogger logger)
-        //{
-        //    var calendarDays = await _calendarDaysPersistanceService.RetrieveAsync();
-        //    await _htmlPageCreatorService.CreateHtmlPageAsync(calendarDays);
-        //}
+        [FunctionName(nameof(TestHtmlReport))]
+        public async Task Run([TimerTrigger("0 57 00 23 12 *", RunOnStartup = true)]TimerInfo myTimer, ILogger logger)
+        {
+            var calendarDays = await _calendarDaysPersistanceService.RetrieveAsync();
+            await _htmlPageCreatorService.CreateHtmlPageAsync(calendarDays);
+        }
     }
 }

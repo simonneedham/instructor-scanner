@@ -41,11 +41,12 @@ namespace InstructorScanner.FunctionApp
             htmlPage.AppendLine("<style>");
             htmlPage.AppendLine("body { font-family: Arial, sans-serif; padding: 1rem; } table { font-size: 0.8rem; width: 100%; margin: 1.4rem auto; }");
             htmlPage.AppendLine("table,td,th { border-collapse: collapse;} th,td { padding: 0.5rem; border: solid 1px; } td { text-align: center; }");
+            htmlPage.AppendLine(".bold { font-weight: bold; }");
             htmlPage.AppendLine("</style>");
             htmlPage.AppendLine("</head>");
             htmlPage.AppendLine("<body>");
             htmlPage.AppendLine("<h1>FI Available Slots</h1>");
-            htmlPage.AppendLine($"<h4>Generated {DateTime.Now: dd-MMM-yyyy HH:mm:ss}</h4>");
+            htmlPage.AppendLine($"<div><span class='bold'>Generated: </span><span>{DateTime.Now: dd-MMM-yyyy HH:mm:ss}</span></div>");
             htmlPage.AppendLine("<br>"); htmlPage.AppendLine("<br>");
 
             htmlPage.AppendLine("<table>");
@@ -114,6 +115,8 @@ namespace InstructorScanner.FunctionApp
 
             htmlPage.AppendLine("</tbody>");
             htmlPage.AppendLine("</table>");
+            htmlPage.AppendLine("<br>");
+            htmlPage.AppendLine($"<div><span class='bold'>Total free slots: </span><span>{calendarDays.CalculateTotalSlotCount()}</span></div>");
             htmlPage.AppendLine("</body>");
             htmlPage.AppendLine("</html>");
 
