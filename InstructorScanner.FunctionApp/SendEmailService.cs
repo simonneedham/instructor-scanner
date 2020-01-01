@@ -56,8 +56,8 @@ namespace InstructorScanner.FunctionApp
             try
             {
                 var message = new SendGridMessage();
-                message.AddTo(_appSettings.Value.EmailAddress);
-                message.SetFrom(_appSettings.Value.EmailAddress);
+                message.AddTo(_appSettings.Value.ToEmailAddress);
+                message.SetFrom(_appSettings.Value.FromEmailAddress);
                 message.SetSubject(subject);
                 message.AddContent(mimeType, messageBody);
 
@@ -67,7 +67,7 @@ namespace InstructorScanner.FunctionApp
                 var statusCode = (int)response.StatusCode;
                 if(statusCode >= 200 && statusCode<= 299)
                 {
-                    _logger.LogInformation("Sent email with subject '{subject}' to {emailAddress} at {sentDateTime:dd-MMM-yyyy HH:mm:ss}", subject, _appSettings.Value.EmailAddress, DateTime.UtcNow);
+                    _logger.LogInformation("Sent email with subject '{subject}' to {emailAddress} at {sentDateTime:dd-MMM-yyyy HH:mm:ss}", subject, _appSettings.Value.ToEmailAddress, DateTime.UtcNow);
                 }
                 else
                 {
