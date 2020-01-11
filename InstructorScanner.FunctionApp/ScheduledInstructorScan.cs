@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace InstructorScanner.FunctionApp
@@ -31,11 +32,12 @@ namespace InstructorScanner.FunctionApp
         }
 
         [FunctionName(nameof(ScheduledInstructorScan))]
-        public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *")]TimerInfo myTimer, ILogger logger)
-        //public async Task Run([TimerTrigger("0 57 00 23 12 *")]TimerInfo myTimer, ILogger logger)
+        public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger logger)
         {
             var instructorCount = _appSettings.Value.Instructors.Count;
-            logger.LogInformation($"Initiating scan for of {instructorCount} instructors for {_appSettings.Value.DaysToScan} days at {DateTime.Now: dd-MMM-yyy HH:mm:ss}");
+            var sw = Stopwatch.StartNew();
+
+            logger.LogInformation($"Initiating scan for of {instructorCount} instructors for {_appSettings.Value.DaysToScan} days with a {_appSettings.Value.StartWindowDays} day lead window at {DateTime.Now: dd-MMM-yyy HH:mm:ss}");
 
             var previousCalendarDays = await _calendarDaysPersistanceService.RetrieveAsync();
 
@@ -59,6 +61,9 @@ namespace InstructorScanner.FunctionApp
             {
                 logger.LogInformation($"Not sending an email as {calendarChanges.Count} calender changes line count is less than or equal to the minimum of {instructorCount * 2}");
             }
+
+            sw.Stop();
+            logger.LogInformation($"Scan completed after {sw.Elapsed.Minutes}m {sw.Elapsed.Seconds}s.");
         }
     }
 }

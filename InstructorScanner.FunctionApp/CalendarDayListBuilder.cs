@@ -32,7 +32,7 @@ namespace InstructorScanner.FunctionApp
             var today = DateTime.Today;
             using (var bpp = new BookingPageParser(_appSettings, _logger))
             {
-                for (var d = 0; d < _appSettings.Value.DaysToScan; d++)
+                for (var d = _appSettings.Value.StartWindowDays; d < _appSettings.Value.DaysToScan; d++)
                 {
                     var parseDate = today.AddDays(d);
                     _logger.LogInformation($"Parsing bookings page for {parseDate:dd/MM/yyyy}");
