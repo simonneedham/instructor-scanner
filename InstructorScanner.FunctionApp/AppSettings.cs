@@ -16,5 +16,6 @@ namespace InstructorScanner.FunctionApp
         public string ToEmailAddress { get; set; }
         public string FromEmailAddress { get; set; }
         public string WebRootUrl { get; set; }
+        public int StartWindowDays { get; set; }
     }
 }
