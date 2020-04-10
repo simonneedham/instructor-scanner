@@ -55,7 +55,7 @@ namespace InstructorScanner.FunctionApp
             emailContent.Add(string.Empty);
             emailContent.Add($"Slot summary: {_appSettings.Value.WebRootUrl}");
 
-            await _sendEmailService.SendEmailAsync("Instructor Scan Status", emailContent, MimeType.Text);
+            await _sendEmailService.SendEmailAsync("Instructor Scan Status", emailContent, MimeType.Html);
         }
     }
 }
