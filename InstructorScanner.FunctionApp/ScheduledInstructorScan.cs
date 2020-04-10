@@ -32,7 +32,8 @@ namespace InstructorScanner.FunctionApp
         }
 
         [FunctionName(nameof(ScheduledInstructorScan))]
-        public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger logger)
+        public async Task Run([TimerTrigger("0 5 8 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger logger)
+        //public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger logger)
         {
             var instructorCount = _appSettings.Value.Instructors.Count;
             var sw = Stopwatch.StartNew();
