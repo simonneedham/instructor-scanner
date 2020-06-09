@@ -8,8 +8,8 @@ namespace InstructorScanner.FunctionApp
     {
         public static List<string> Compare(List<CalendarDay> oldValues, List<CalendarDay> newValues)
         {
-            if (oldValues == null) throw new ArgumentNullException("oldValue");
-            if (newValues == null) throw new ArgumentNullException("newValue");
+            if (oldValues == null) throw new ArgumentNullException("oldValues");
+            if (newValues == null) throw new ArgumentNullException("newValues");
 
             var instructorAvailability = new Dictionary<string, List<string>>();
 
@@ -56,7 +56,7 @@ namespace InstructorScanner.FunctionApp
 
         private static List<string> FindNewAvailableSlots(InstructorSlots oldInstructorSlots, InstructorSlots newInstructorSlots)
         {
-            if (newInstructorSlots == null) throw new ArgumentNullException("newCalDay");
+            if (newInstructorSlots == null) throw new ArgumentNullException("newInstructorSlots");
             if (oldInstructorSlots == null)
             {
                 oldInstructorSlots = new InstructorSlots { InstructorInitials = newInstructorSlots.InstructorInitials, Slots = new List<Slot>() };
@@ -70,7 +70,7 @@ namespace InstructorScanner.FunctionApp
             foreach (var newFreeSlot in newFeeSlots)
             {
                 var matchedOldLSlot = oldInstructorSlots.Slots.SingleOrDefault(s => s.Time == newFreeSlot.Time);
-                if (matchedOldLSlot == null || (matchedOldLSlot != null && matchedOldLSlot.Availability != newFreeSlot.Availability))
+                if (matchedOldLSlot == null || (matchedOldLSlot.Availability != newFreeSlot.Availability))
                 {
                     messages.Add($"{newFreeSlot.Time} is available");
                 }
