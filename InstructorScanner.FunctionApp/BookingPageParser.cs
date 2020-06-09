@@ -95,11 +95,8 @@ namespace InstructorScanner.FunctionApp
                 instructorSlotsList.Add(instructorSlots);
             }
 
-            var calendarDay = new CalendarDay
-            {
-                Date = date,
-                InstructorSlots = instructorSlotsList
-            };
+            var calendarDay = new CalendarDay{ InstructorSlots = instructorSlotsList };
+            calendarDay.SetDate(date);
 
             return calendarDay;
         }
