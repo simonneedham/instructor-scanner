@@ -17,5 +17,8 @@ namespace InstructorScanner.FunctionApp
         public string FromEmailAddress { get; set; }
         public string WebRootUrl { get; set; }
         public int StartWindowDays { get; set; }
+        public string CosmosDbDatabaseName { get; set; }
+        public string CosmosDbAccountKey { get; set; }
+        public string CosmosDbAccountEndPoint { get; set; }
     }
 }
