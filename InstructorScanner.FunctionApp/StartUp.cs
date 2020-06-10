@@ -32,7 +32,6 @@ namespace InstructorScanner.FunctionApp
                 .BuildServiceProvider()
                 .GetRequiredService<IOptions<AppSettings>>();
 
-            builder.Services.AddScoped<ICalendarDayListBuilder, CalendarDayListBuilder>();
             builder.Services.AddScoped<ICalendarDaysPersistanceService, CalendarDaysPersistanceService>();
             builder.Services.AddScoped<IHtmlPageCreatorService, HtmlPageCreatorService>();
             builder.Services.AddScoped<ISendEmailService, SendEmailService>();

@@ -42,7 +42,7 @@ namespace InstructorScanner.FunctionApp
             bookingPageParser.LoadHtml(bookingPageContents);
 
             var tableBookings = bookingPageParser.DocumentNode.SelectSingleNode("//table[@id='tblBookings']");
-            if (tableBookings == null) throw new Exception("Could not find table with an id of 'tblBookings'");
+            if (tableBookings == null) throw new InstructorScanException("Could not find table with an id of 'tblBookings'");
 
             var times = new List<string>();
             var timesTDNodes = tableBookings.SelectNodes(".//td[@class='TimeHeaderHalf']");
@@ -83,7 +83,7 @@ namespace InstructorScanner.FunctionApp
                     }
 
                     if (times.Count != bookings.Count)
-                        throw new Exception("Eeek!! Time slot count doesn't match bookings count!");
+                        throw new InstructorScanException("Eeek!! Time slot count doesn't match bookings count!");
 
 
                     for (var i = 0; i < bookings.Count; i++)

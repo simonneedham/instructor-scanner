@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using SendGrid;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,21 +14,18 @@ namespace InstructorScanner.FunctionApp
     public class ScheduledInstructorScanDurable
     {
         private readonly IOptions<AppSettings> _appSettings;
-        private readonly ICalendarDayListBuilder _calendarDayListBuilder;
         private readonly ICalendarDaysPersistanceService _calendarDaysPersistanceService;
         private readonly IHtmlPageCreatorService _htmlPageCreatorService;
         private readonly ISendEmailService _sendEmailService;
 
         public ScheduledInstructorScanDurable(
             IOptions<AppSettings> appSettings,
-            ICalendarDayListBuilder calendarDayListBuilder,
             ICalendarDaysPersistanceService calendarDaysPersistanceService,
             IHtmlPageCreatorService htmlPageCreatorService,
             ISendEmailService sendEmailService
         )
         {
             _appSettings = appSettings;
-            _calendarDayListBuilder = calendarDayListBuilder;
             _calendarDaysPersistanceService = calendarDaysPersistanceService;
             _htmlPageCreatorService = htmlPageCreatorService;
             _sendEmailService = sendEmailService;
@@ -38,6 +34,7 @@ namespace InstructorScanner.FunctionApp
         [FunctionName("ScheduledInstructorScanDurableTimerTrigger")]
         public static async Task TimerTrigger(
             [TimerTrigger("0 5 8 * * *", RunOnStartup = true)]TimerInfo myTimer,
+            //[TimerTrigger("0 5 11,15,19 * * *", RunOnStartup = true)]TimerInfo myTimer,
             [DurableClient] IDurableOrchestrationClient starter,
             ILogger logger
             )
@@ -103,6 +100,7 @@ namespace InstructorScanner.FunctionApp
                 logger.LogInformation($"Not sending an email as {calendarChanges.Count} calendar changes line count is less than or equal to the minimum of {instructorCount * 2}");
             }
 
+            // finish
             var stopped = context.CurrentUtcDateTime;
             var orchestratorRunTime = stopped - started;
             logger.LogInformation($"Scan completed after {orchestratorRunTime.Minutes}m {orchestratorRunTime.Seconds}s.");

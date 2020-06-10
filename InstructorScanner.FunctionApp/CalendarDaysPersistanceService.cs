@@ -72,7 +72,7 @@ namespace InstructorScanner.FunctionApp
                         // Item stream operations do not throw exceptions for better performance
                         if (!responseMessage.IsSuccessStatusCode)
                         {
-                            throw new Exception($"Failed to store slots for calendar day {calDay.Date:dd-MMM-yyyy}. Status code: {responseMessage.StatusCode} Message: {responseMessage.ErrorMessage}");
+                            throw new InstructorScanException($"Failed to store slots for calendar day {calDay.Date:dd-MMM-yyyy}. Status code: {responseMessage.StatusCode} Message: {responseMessage.ErrorMessage}");
                         }
                     }
                 }
@@ -83,7 +83,7 @@ namespace InstructorScanner.FunctionApp
         {
             var dbName = _appSettingOptions.Value.CosmosDbDatabaseName;
             var dbResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(id: dbName, cancellationToken: cancellationToken);
-            if (dbResponse.StatusCode != HttpStatusCode.OK) throw new Exception($"Failed to create Cosmos db '{dbName}'");
+            if (dbResponse.StatusCode != HttpStatusCode.OK) throw new InstructorScanException($"Failed to create Cosmos db '{dbName}'");
 
             Container container;
             try
@@ -99,7 +99,7 @@ namespace InstructorScanner.FunctionApp
                     .WithUniqueKey().Path("/date")
                     .Attach()
                     .CreateIfNotExistsAsync();
-                if (containerResponse.StatusCode != HttpStatusCode.OK) throw new Exception($"Failed to create container '{CONTAINER_NAME}'");
+                if (containerResponse.StatusCode != HttpStatusCode.OK) throw new InstructorScanException($"Failed to create container '{CONTAINER_NAME}'");
 
                 container = containerResponse.Container;
             }

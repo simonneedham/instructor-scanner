@@ -62,7 +62,7 @@ namespace InstructorScanner.FunctionApp
                 message.AddContent(mimeType, messageBody);
 
                 var response = await _sendGridClient.SendEmailAsync(message, cancellationToken);
-                if (response == null) throw new Exception("Send Grid failed to return a response");
+                if (response == null) throw new InstructorScanException("Send Grid failed to return a response");
 
                 var statusCode = (int)response.StatusCode;
                 if(statusCode >= 200 && statusCode<= 299)
@@ -79,7 +79,7 @@ namespace InstructorScanner.FunctionApp
                         errorMsg += "\n" + errors.ToString();
                     }
 
-                    throw new Exception(errorMsg);
+                    throw new InstructorScanException(errorMsg);
                 }
             }
             catch(Exception ex)

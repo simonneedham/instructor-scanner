@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace InstructorScanner.FunctionApp
@@ -27,11 +28,12 @@ namespace InstructorScanner.FunctionApp
         [FunctionName(nameof(ScheduleInstructorScanStatusCheck))]
         public async Task Run(
             [TimerTrigger("0 05 06 * * *")]TimerInfo myTimer,
-            ILogger logger
+            ILogger logger,
+            CancellationToken cancellationToken
         )
         {
             var emailContent = new List<string>();
-            var previousCalendarDays = await _calendarDayPersistanceService.RetrieveAsync();
+            var previousCalendarDays = await _calendarDayPersistanceService.RetrieveAsync(cancellationToken);
 
             if(previousCalendarDays == null)
             {
@@ -54,7 +56,7 @@ namespace InstructorScanner.FunctionApp
             emailContent.Add(string.Empty);
             emailContent.Add($"Slot summary: {_appSettings.Value.WebRootUrl}");
 
-            await _sendEmailService.SendEmailAsync("Instructor Scan Status", emailContent, MimeType.Html);
+            await _sendEmailService.SendEmailAsync("Instructor Scan Status", emailContent, MimeType.Html, cancellationToken);
         }
     }
 }

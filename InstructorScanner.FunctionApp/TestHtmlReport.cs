@@ -1,8 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-
-namespace InstructorScanner.FunctionApp
+﻿namespace InstructorScanner.FunctionApp
 {
     public class TestHtmlReport
     {
