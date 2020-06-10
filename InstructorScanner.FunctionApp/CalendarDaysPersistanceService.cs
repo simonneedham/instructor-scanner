@@ -7,14 +7,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace InstructorScanner.FunctionApp
 {
     public interface ICalendarDaysPersistanceService
     {
-        Task<List<CalendarDay>> RetrieveAsync();
-        Task StoreAsync(List<CalendarDay> calendarDays);
+        Task<List<CalendarDay>> RetrieveAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task StoreAsync(List<CalendarDay> calendarDays, CancellationToken cancellationToken = default(CancellationToken));
     }
 
     public class CalendarDaysPersistanceService : ICalendarDaysPersistanceService
@@ -37,19 +38,19 @@ namespace InstructorScanner.FunctionApp
             _appSettingOptions = appSettingOptions;
         }
 
-        public async Task<List<CalendarDay>> RetrieveAsync()
+        public async Task<List<CalendarDay>> RetrieveAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var calendarDays = new List<CalendarDay>();
 
             using (var cosmosClient = new CosmosClient(_appSettingOptions.Value.CosmosDbAccountEndPoint, _appSettingOptions.Value.CosmosDbAccountKey))
             {
-                var container = await GetContainerAsync(cosmosClient);
+                var container = await GetContainerAsync(cosmosClient, cancellationToken);
                 var resultSet = container
                     .GetItemQueryIterator<CalendarDay>(queryDefinition: null);
 
                 while (resultSet.HasMoreResults)
                 {
-                    var calDaysResponse = await resultSet.ReadNextAsync();
+                    var calDaysResponse = await resultSet.ReadNextAsync(cancellationToken);
                     calendarDays.AddRange(calDaysResponse);
                 }
             }
@@ -57,16 +58,16 @@ namespace InstructorScanner.FunctionApp
             return calendarDays;
         }
 
-        public async Task StoreAsync(List<CalendarDay> calendarDays)
+        public async Task StoreAsync(List<CalendarDay> calendarDays, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var cosmosClient = new CosmosClient(_appSettingOptions.Value.CosmosDbAccountEndPoint, _appSettingOptions.Value.CosmosDbAccountKey))
             {
-                var container = await GetContainerAsync(cosmosClient);
+                var container = await GetContainerAsync(cosmosClient, cancellationToken);
 
                 foreach (var calDay in calendarDays)
                 {
                     using(var stream = ToStream(calDay))
-                    using (var responseMessage = await container.UpsertItemStreamAsync(stream, new PartitionKey(FLYING_CLUB)))
+                    using (var responseMessage = await container.UpsertItemStreamAsync(stream, new PartitionKey(FLYING_CLUB), null, cancellationToken))
                     {
                         // Item stream operations do not throw exceptions for better performance
                         if (!responseMessage.IsSuccessStatusCode)
@@ -78,10 +79,10 @@ namespace InstructorScanner.FunctionApp
             }
         }
 
-        private async Task<Container> GetContainerAsync(CosmosClient cosmosClient)
+        private async Task<Container> GetContainerAsync(CosmosClient cosmosClient, CancellationToken cancellationToken)
         {
             var dbName = _appSettingOptions.Value.CosmosDbDatabaseName;
-            var dbResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(dbName);
+            var dbResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(id: dbName, cancellationToken: cancellationToken);
             if (dbResponse.StatusCode != HttpStatusCode.OK) throw new Exception($"Failed to create Cosmos db '{dbName}'");
 
             Container container;

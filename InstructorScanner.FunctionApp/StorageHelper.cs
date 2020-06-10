@@ -1,19 +1,18 @@
-﻿using InstructorScanner.FunctionApp;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.IO;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace InstructorScanner.FunctionApp
 {
     public interface IStorageHelper
     {
-        Task<bool> FileExistsAsync(string containerName, string fileName);
-        Task<string> ReadFileAsync(string containerName, string fileName);
-        Task SaveFileAsync(string containerName, string fileName, string fileContents);
+        Task<bool> FileExistsAsync(string containerName, string fileName, CancellationToken cancellationToken = default(CancellationToken));
+        Task<string> ReadFileAsync(string containerName, string fileName, CancellationToken cancellationToken = default(CancellationToken));
+        Task SaveFileAsync(string containerName, string fileName, string fileContents, CancellationToken cancellationToken = default(CancellationToken));
     }
 
     public class StorageHelper : IStorageHelper
@@ -33,7 +32,7 @@ namespace InstructorScanner.FunctionApp
 
         }
 
-        public async Task<bool> FileExistsAsync(string containerName, string fileName)
+        public async Task<bool> FileExistsAsync(string containerName, string fileName, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await _cloudBlobClient
                 .Value
@@ -42,7 +41,7 @@ namespace InstructorScanner.FunctionApp
                 .ExistsAsync();
         }
 
-        public async Task<string> ReadFileAsync(string containerName, string fileName)
+        public async Task<string> ReadFileAsync(string containerName, string fileName, CancellationToken cancellationToken = default(CancellationToken))
         {
             var cloudBlobContainer = _cloudBlobClient.Value.GetContainerReference(containerName);
 
@@ -50,7 +49,7 @@ namespace InstructorScanner.FunctionApp
             return await blockBlob.DownloadTextAsync();
         }
 
-        public async Task SaveFileAsync(string containerName, string fileName, string fileContents)
+        public async Task SaveFileAsync(string containerName, string fileName, string fileContents, CancellationToken cancellationToken = default(CancellationToken))
         {
             var cloudBlockBlob = _cloudBlobClient.Value.GetContainerReference(containerName).GetBlockBlobReference(fileName);
 

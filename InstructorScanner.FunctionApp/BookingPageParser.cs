@@ -13,14 +13,14 @@ namespace InstructorScanner.FunctionApp
     public class BookingPageParser : IDisposable
     {
         private readonly AppSettings _appSettings;
-        private readonly ILogger<CalendarDayListBuilder> _logger;
+        private readonly ILogger _logger;
         private CookieContainer _cookies;
         private HttpClientHandler _httpClientHandler;
         private HttpClient _httpClient;
         private readonly Uri _rootUrl;
 
 
-        public BookingPageParser(IOptions<AppSettings> appSettingsOptions, ILogger<CalendarDayListBuilder> logger)
+        public BookingPageParser(IOptions<AppSettings> appSettingsOptions, ILogger logger)
         {
             _appSettings = appSettingsOptions.Value;
             _logger = logger;

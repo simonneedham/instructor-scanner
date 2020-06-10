@@ -32,7 +32,7 @@ namespace InstructorScanner.FunctionApp
         }
 
         [FunctionName(nameof(ScheduledInstructorScan))]
-        public async Task Run([TimerTrigger("0 5 8 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger logger)
+        public async Task Run([TimerTrigger("0 5 8 * * *", RunOnStartup = false)]TimerInfo myTimer, ILogger logger)
         //public async Task Run([TimerTrigger("0 5 8,12,16,20 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger logger)
         {
             var instructorCount = _appSettings.Value.Instructors.Count;
@@ -60,7 +60,7 @@ namespace InstructorScanner.FunctionApp
             }
             else
             {
-                logger.LogInformation($"Not sending an email as {calendarChanges.Count} calender changes line count is less than or equal to the minimum of {instructorCount * 2}");
+                logger.LogInformation($"Not sending an email as {calendarChanges.Count} calendar changes line count is less than or equal to the minimum of {instructorCount * 2}");
             }
 
             sw.Stop();
