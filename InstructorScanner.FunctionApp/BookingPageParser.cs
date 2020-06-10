@@ -13,14 +13,14 @@ namespace InstructorScanner.FunctionApp
     public class BookingPageParser : IDisposable
     {
         private readonly AppSettings _appSettings;
-        private readonly ILogger<CalendarDayListBuilder> _logger;
+        private readonly ILogger _logger;
         private CookieContainer _cookies;
         private HttpClientHandler _httpClientHandler;
         private HttpClient _httpClient;
         private readonly Uri _rootUrl;
 
 
-        public BookingPageParser(IOptions<AppSettings> appSettingsOptions, ILogger<CalendarDayListBuilder> logger)
+        public BookingPageParser(IOptions<AppSettings> appSettingsOptions, ILogger logger)
         {
             _appSettings = appSettingsOptions.Value;
             _logger = logger;
@@ -42,7 +42,7 @@ namespace InstructorScanner.FunctionApp
             bookingPageParser.LoadHtml(bookingPageContents);
 
             var tableBookings = bookingPageParser.DocumentNode.SelectSingleNode("//table[@id='tblBookings']");
-            if (tableBookings == null) throw new Exception("Could not find table with an id of 'tblBookings'");
+            if (tableBookings == null) throw new InstructorScanException("Could not find table with an id of 'tblBookings'");
 
             var times = new List<string>();
             var timesTDNodes = tableBookings.SelectNodes(".//td[@class='TimeHeaderHalf']");
@@ -83,7 +83,7 @@ namespace InstructorScanner.FunctionApp
                     }
 
                     if (times.Count != bookings.Count)
-                        throw new Exception("Eeek!! Time slot count doesn't match bookings count!");
+                        throw new InstructorScanException("Eeek!! Time slot count doesn't match bookings count!");
 
 
                     for (var i = 0; i < bookings.Count; i++)

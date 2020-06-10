@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
-
-namespace InstructorScanner.FunctionApp
+﻿namespace InstructorScanner.FunctionApp
 {
     public class Instructor
     {

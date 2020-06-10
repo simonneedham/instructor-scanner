@@ -2,21 +2,21 @@
 using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 using System;
-using System.Net;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace InstructorScanner.FunctionApp
 {
 
     public interface ISendEmailService
     {
-        Task SendEmailAsync(string subject, string messageBody);
-        Task SendEmailAsync(string subject, string messageBody, string mimeType);
-        Task SendEmailAsync(string subject, IList<string> messageBody);
-        Task SendEmailAsync(string subject, IList<string> messageBody, string mimeType);
+        Task SendEmailAsync(string subject, string messageBody, CancellationToken cancellationToken = default(CancellationToken));
+        Task SendEmailAsync(string subject, string messageBody, string mimeType, CancellationToken cancellationToken = default(CancellationToken));
+        Task SendEmailAsync(string subject, IList<string> messageBody, CancellationToken cancellationToken = default(CancellationToken));
+        Task SendEmailAsync(string subject, IList<string> messageBody, string mimeType, CancellationToken cancellationToken = default(CancellationToken));
     }
 
     public class SendEmailService : ISendEmailService
@@ -36,22 +36,22 @@ namespace InstructorScanner.FunctionApp
             _sendGridClient = sendGridClient;
         }
 
-        public Task SendEmailAsync(string subject, string messageBody)
+        public Task SendEmailAsync(string subject, string messageBody, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return SendEmailAsync(subject, messageBody, MimeType.Text);
+            return SendEmailAsync(subject, messageBody, MimeType.Text, cancellationToken);
         }
 
-        public Task SendEmailAsync(string subject, IList<string> messageBody)
+        public Task SendEmailAsync(string subject, IList<string> messageBody, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return SendEmailAsync(subject, messageBody, MimeType.Text);
+            return SendEmailAsync(subject, messageBody, MimeType.Text, cancellationToken);
         }
 
-        public Task SendEmailAsync(string subject, IList<string> messageBody, string mimeType)
+        public Task SendEmailAsync(string subject, IList<string> messageBody, string mimeType, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return SendEmailAsync(subject, BuildMessageBody(messageBody, mimeType), mimeType);
+            return SendEmailAsync(subject, BuildMessageBody(messageBody, mimeType), mimeType, cancellationToken);
         }
 
-        public async Task SendEmailAsync(string subject, string messageBody, string mimeType)
+        public async Task SendEmailAsync(string subject, string messageBody, string mimeType, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
@@ -61,8 +61,8 @@ namespace InstructorScanner.FunctionApp
                 message.SetSubject(subject);
                 message.AddContent(mimeType, messageBody);
 
-                var response = await _sendGridClient.SendEmailAsync(message);
-                if (response == null) throw new Exception("Send Grid failed to return a response");
+                var response = await _sendGridClient.SendEmailAsync(message, cancellationToken);
+                if (response == null) throw new InstructorScanException("Send Grid failed to return a response");
 
                 var statusCode = (int)response.StatusCode;
                 if(statusCode >= 200 && statusCode<= 299)
@@ -79,7 +79,7 @@ namespace InstructorScanner.FunctionApp
                         errorMsg += "\n" + errors.ToString();
                     }
 
-                    throw new Exception(errorMsg);
+                    throw new InstructorScanException(errorMsg);
                 }
             }
             catch(Exception ex)

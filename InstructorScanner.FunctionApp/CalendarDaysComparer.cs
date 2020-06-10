@@ -62,7 +62,7 @@ namespace InstructorScanner.FunctionApp
                 oldInstructorSlots = new InstructorSlots { InstructorInitials = newInstructorSlots.InstructorInitials, Slots = new List<Slot>() };
             }
 
-            if (oldInstructorSlots.InstructorInitials != newInstructorSlots.InstructorInitials) throw new Exception($"Old instructor slot initials '{oldInstructorSlots.InstructorInitials}' does not match new instructor slot initials '{newInstructorSlots.InstructorInitials}'");
+            if (oldInstructorSlots.InstructorInitials != newInstructorSlots.InstructorInitials) throw new InstructorScanException($"Old instructor slot initials '{oldInstructorSlots.InstructorInitials}' does not match new instructor slot initials '{newInstructorSlots.InstructorInitials}'");
 
             var messages = new List<string>();
 

@@ -20,5 +20,6 @@ namespace InstructorScanner.FunctionApp
         public string CosmosDbDatabaseName { get; set; }
         public string CosmosDbAccountKey { get; set; }
         public string CosmosDbAccountEndPoint { get; set; }
+        public int DelaySecondsPerScan { get; set; }
     }
 }

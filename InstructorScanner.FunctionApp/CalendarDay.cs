@@ -7,7 +7,7 @@ namespace InstructorScanner.FunctionApp
     {
         public string Id { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTimeOffset Date { get; set; }
 
         public List<InstructorSlots> InstructorSlots { get; set; }
 
@@ -15,8 +15,11 @@ namespace InstructorScanner.FunctionApp
 
         public int Ttl { get; set; }
 
+        public DateTimeOffset Created { get; set; }
+
         public void SetDate(DateTime date)
         {
+            Created = DateTimeOffset.Now;
             Date = date;
             Id = date.ToString("yyyyMMdd");
             Ttl= (date - DateTime.Today).Days * 24 * 60 * 60;

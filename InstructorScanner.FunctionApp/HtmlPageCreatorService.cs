@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
 using System;
+using System.Threading;
 
 namespace InstructorScanner.FunctionApp
 {
     public interface IHtmlPageCreatorService
     {
-        Task CreateHtmlPageAsync(List<CalendarDay> calendarDays);
+        Task CreateHtmlPageAsync(List<CalendarDay> calendarDays, CancellationToken cancellationToken = default(CancellationToken));
     }
 
     public class HtmlPageCreatorService : IHtmlPageCreatorService
@@ -22,7 +23,7 @@ namespace InstructorScanner.FunctionApp
             _storageHelper = storageHelper;
         }
 
-        public async Task CreateHtmlPageAsync(List<CalendarDay> calendarDays)
+        public async Task CreateHtmlPageAsync(List<CalendarDay> calendarDays, CancellationToken cancellationToken = default(CancellationToken))
         {
             var distinctSlots = calendarDays
                 .SelectMany(cd => cd.InstructorSlots.SelectMany(instructSlots => instructSlots.Slots)
@@ -120,7 +121,7 @@ namespace InstructorScanner.FunctionApp
             htmlPage.AppendLine("</body>");
             htmlPage.AppendLine("</html>");
 
-            await _storageHelper.SaveFileAsync(ContainerNames.Web, "instructors-and-slots.html", htmlPage.ToString());
+            await _storageHelper.SaveFileAsync(ContainerNames.Web, "instructors-and-slots.html", htmlPage.ToString(), cancellationToken);
         }
     }
 }
