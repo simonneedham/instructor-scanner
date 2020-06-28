@@ -33,8 +33,7 @@ namespace InstructorScanner.FunctionApp
 
         [FunctionName("ScheduledInstructorScanDurableTimerTrigger")]
         public static async Task TimerTrigger(
-            [TimerTrigger("0 5 8 * * *", RunOnStartup = true)]TimerInfo myTimer,
-            //[TimerTrigger("0 5 11,15,19 * * *", RunOnStartup = true)]TimerInfo myTimer,
+            [TimerTrigger("0 5 11,19 * * *", RunOnStartup = true)]TimerInfo myTimer,
             [DurableClient] IDurableOrchestrationClient starter,
             ILogger logger
             )
