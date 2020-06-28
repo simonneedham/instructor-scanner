@@ -93,7 +93,7 @@ namespace InstructorScanner.FunctionApp
                 calendarChanges.Add(string.Empty);
                 calendarChanges.Add($"Slot summary: {_appSettings.Value.WebRootUrl}");
 
-                await context.CallActivityAsync<List<CalendarDay>>("ScheduledInstructorScanDurableCreateHtmlPage", new EmailOptions { Subject = "FI Booking Scan Results", MessagBody = calendarChanges });
+                await context.CallActivityAsync<List<CalendarDay>>("ScheduledInstructorScanDurableSendEmail", new EmailOptions { Subject = "FI Booking Scan Results", MessagBody = calendarChanges });
             }
             else
             {
